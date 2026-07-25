@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
@@ -23,7 +23,7 @@ import {
 type Category = {
   id: string;
   name: string;
-  nameAr: string | null;
+  nameCkb: string | null;
   icon: string | null;
   color: string | null;
   _count?: { products: number };
@@ -36,13 +36,13 @@ export function CategoriesClient({ categories: initial }: { categories: Category
   const [categories, setCategories] = useState(initial);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Category | null>(null);
-  const [form, setForm] = useState({ name: "", nameAr: "", icon: "Package", color: "#15803d" });
+  const [form, setForm] = useState({ name: "", nameCkb: "", icon: "Package", color: "#15803d" });
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
   function openCreate() {
     setEditing(null);
-    setForm({ name: "", nameAr: "", icon: "Package", color: "#15803d" });
+    setForm({ name: "", nameCkb: "", icon: "Package", color: "#15803d" });
     setOpen(true);
   }
 
@@ -50,7 +50,7 @@ export function CategoriesClient({ categories: initial }: { categories: Category
     setEditing(c);
     setForm({
       name: c.name,
-      nameAr: c.nameAr || "",
+      nameCkb: c.nameCkb || "",
       icon: c.icon || "Package",
       color: c.color || "#15803d",
     });
@@ -67,7 +67,7 @@ export function CategoriesClient({ categories: initial }: { categories: Category
         await upsertCategory({
           id: editing?.id,
           name: form.name,
-          nameAr: form.nameAr,
+          nameCkb: form.nameCkb,
           icon: form.icon,
           color: form.color,
         });
@@ -102,7 +102,7 @@ export function CategoriesClient({ categories: initial }: { categories: Category
               <CardContent className="p-4">
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-lg font-semibold">{c.nameAr || c.name}</p>
+                    <p className="text-lg font-semibold">{c.nameCkb || c.name}</p>
                     <p className="text-sm text-muted-foreground">{c.name}</p>
                     <p className="mt-2 text-xs text-muted-foreground">
                       {t("productCount")}: {c.productCount ?? c._count?.products ?? 0}
@@ -134,8 +134,8 @@ export function CategoriesClient({ categories: initial }: { categories: Category
               <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
             </div>
             <div className="space-y-2">
-              <Label>{t("nameAr")}</Label>
-              <Input value={form.nameAr} onChange={(e) => setForm({ ...form, nameAr: e.target.value })} />
+              <Label>{t("nameCkb")}</Label>
+              <Input value={form.nameCkb} onChange={(e) => setForm({ ...form, nameCkb: e.target.value })} />
             </div>
             <div className="space-y-2">
               <Label>{t("color")}</Label>

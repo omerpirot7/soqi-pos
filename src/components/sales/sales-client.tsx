@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { useTranslations, useLocale } from "next-intl";
@@ -47,7 +47,7 @@ type Sale = {
     unitPrice: number;
     lineTotal: number;
     costPrice: number;
-    product: { name: string; nameAr: string | null };
+    product: { name: string; nameCkb: string | null };
   }[];
 };
 
@@ -333,7 +333,7 @@ export function SalesClient({
               cashierName={selected.cashier.name}
               date={formatDate(selected.createdAt, locale)}
               items={selected.items.map((i) => ({
-                name: i.product.nameAr || i.product.name,
+                name: i.product.nameCkb || i.product.name,
                 quantity: i.quantity,
                 unitPrice: i.unitPrice,
                 lineTotal: i.lineTotal,

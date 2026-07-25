@@ -24,7 +24,7 @@ model User {
 model Category {
   id        String    @id @default(cuid())
   name      String
-  nameAr    String?
+  nameCkb   String?   @map("nameAr")
   icon      String?
   color     String?
   products  Product[]
@@ -47,7 +47,7 @@ model Supplier {
 model Product {
   id         String     @id @default(cuid())
   name       String
-  nameAr     String?
+  nameCkb    String?    @map("nameAr")
   barcode    String?    @unique
   sku        String?    @unique
   categoryId String

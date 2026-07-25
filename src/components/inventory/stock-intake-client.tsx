@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
@@ -17,7 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-type Product = { id: string; name: string; nameAr: string | null; costPrice: number; stock: number };
+type Product = { id: string; name: string; nameCkb: string | null; costPrice: number; stock: number };
 type Supplier = { id: string; name: string };
 
 export function StockIntakeClient({
@@ -103,7 +103,7 @@ export function StockIntakeClient({
                 <SelectContent>
                   {products.map((p) => (
                     <SelectItem key={p.id} value={p.id}>
-                      {p.nameAr || p.name} ({fmt.number(p.stock)})
+                      {p.nameCkb || p.name} ({fmt.number(p.stock)})
                     </SelectItem>
                   ))}
                 </SelectContent>

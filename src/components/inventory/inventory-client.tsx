@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
@@ -46,7 +46,7 @@ import {
 type Product = {
   id: string;
   name: string;
-  nameAr: string | null;
+  nameCkb: string | null;
   barcode: string | null;
   sku: string | null;
   categoryId: string;
@@ -58,16 +58,16 @@ type Product = {
   minStock: number;
   imageUrl: string | null;
   expiresAt: Date | string | null;
-  category: { id: string; name: string; nameAr: string | null };
+  category: { id: string; name: string; nameCkb: string | null };
   supplier: { id: string; name: string } | null;
 };
 
-type Category = { id: string; name: string; nameAr: string | null };
+type Category = { id: string; name: string; nameCkb: string | null };
 type Supplier = { id: string; name: string };
 
 const emptyForm = {
   name: "",
-  nameAr: "",
+  nameCkb: "",
   barcode: "",
   sku: "",
   categoryId: "",
@@ -114,7 +114,7 @@ export function InventoryClient({
       if (
         q &&
         !p.name.toLowerCase().includes(q) &&
-        !(p.nameAr || "").includes(q) &&
+        !(p.nameCkb || "").includes(q) &&
         !(p.barcode || "").includes(q)
       )
         return false;
@@ -141,7 +141,7 @@ export function InventoryClient({
     setEditing(p);
     setForm({
       name: p.name,
-      nameAr: p.nameAr || "",
+      nameCkb: p.nameCkb || "",
       barcode: p.barcode || "",
       sku: p.sku || "",
       categoryId: p.categoryId,
@@ -166,7 +166,7 @@ export function InventoryClient({
         await upsertProduct({
           id: editing?.id,
           name: form.name,
-          nameAr: form.nameAr || null,
+          nameCkb: form.nameCkb || null,
           barcode: form.barcode || null,
           sku: form.sku || null,
           categoryId: form.categoryId,
@@ -193,7 +193,7 @@ export function InventoryClient({
       header: t("name"),
       cell: ({ row }) => (
         <div>
-          <p className="font-medium">{row.original.nameAr || row.original.name}</p>
+          <p className="font-medium">{row.original.nameCkb || row.original.name}</p>
           <p className="text-xs text-muted-foreground">{row.original.barcode}</p>
         </div>
       ),
@@ -201,7 +201,7 @@ export function InventoryClient({
     {
       accessorKey: "category",
       header: t("category"),
-      cell: ({ row }) => row.original.category.nameAr || row.original.category.name,
+      cell: ({ row }) => row.original.category.nameCkb || row.original.category.name,
     },
     {
       accessorKey: "sellPrice",
@@ -273,7 +273,7 @@ export function InventoryClient({
                   <p className="text-sm text-muted-foreground">
                     {lowStock
                       .slice(0, 3)
-                      .map((p) => p.nameAr || p.name)
+                      .map((p) => p.nameCkb || p.name)
                       .join(" · ")}
                     {lowStock.length > 3 ? ` +${lowStock.length - 3}` : ""}
                   </p>
@@ -290,7 +290,7 @@ export function InventoryClient({
                   <p className="text-sm text-muted-foreground">
                     {expiring
                       .slice(0, 3)
-                      .map((p) => p.nameAr || p.name)
+                      .map((p) => p.nameCkb || p.name)
                       .join(" · ")}
                   </p>
                 </div>
@@ -315,7 +315,7 @@ export function InventoryClient({
             <SelectItem value="all">{tCommon("all")}</SelectItem>
             {categories.map((c) => (
               <SelectItem key={c.id} value={c.id}>
-                {c.nameAr || c.name}
+                {c.nameCkb || c.name}
               </SelectItem>
             ))}
           </SelectContent>
@@ -360,9 +360,9 @@ export function InventoryClient({
               <CardContent className="p-4">
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <p className="font-semibold">{p.nameAr || p.name}</p>
+                    <p className="font-semibold">{p.nameCkb || p.name}</p>
                     <p className="text-xs text-muted-foreground">
-                      {p.category.nameAr || p.category.name}
+                      {p.category.nameCkb || p.category.name}
                     </p>
                   </div>
                   <Badge variant={p.stock <= p.minStock ? "warning" : "secondary"}>
@@ -398,8 +398,8 @@ export function InventoryClient({
               <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
             </div>
             <div className="space-y-2 sm:col-span-2">
-              <Label>{t("nameAr")}</Label>
-              <Input value={form.nameAr} onChange={(e) => setForm({ ...form, nameAr: e.target.value })} />
+              <Label>{t("nameCkb")}</Label>
+              <Input value={form.nameCkb} onChange={(e) => setForm({ ...form, nameCkb: e.target.value })} />
             </div>
             <div className="space-y-2">
               <Label>{t("barcode")}</Label>
@@ -418,7 +418,7 @@ export function InventoryClient({
                 <SelectContent>
                   {categories.map((c) => (
                     <SelectItem key={c.id} value={c.id}>
-                      {c.nameAr || c.name}
+                      {c.nameCkb || c.name}
                     </SelectItem>
                   ))}
                 </SelectContent>

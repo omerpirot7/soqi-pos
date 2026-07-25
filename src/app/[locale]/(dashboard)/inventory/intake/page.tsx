@@ -16,7 +16,7 @@ export default async function StockIntakePage({
       products={products.map((p) => ({
         id: p.id,
         name: p.name,
-        nameAr: p.nameAr,
+        nameCkb: p.nameCkb,
         costPrice: Number(p.costPrice),
         stock: Number(p.stock),
       }))}

@@ -17,7 +17,7 @@ export default async function LabelsPage({
       products={products.map((p) => ({
         id: p.id,
         name: p.name,
-        nameAr: p.nameAr,
+        nameCkb: p.nameCkb,
         barcode: p.barcode,
         sellPrice: Number(p.sellPrice),
       }))}

@@ -1,4 +1,4 @@
-{
+﻿{
   "common": {
     "appName": "Souqi POS",
     "loading": "Loading...",
@@ -101,7 +101,7 @@
     "addProduct": "Add Product",
     "editProduct": "Edit Product",
     "name": "Name",
-    "nameAr": "Kurdish name",
+    "nameCkb": "Kurdish name",
     "barcode": "Barcode",
     "sku": "SKU",
     "category": "Category",
@@ -144,7 +144,7 @@
     "add": "Add Category",
     "edit": "Edit Category",
     "name": "Name",
-    "nameAr": "Kurdish name",
+    "nameCkb": "Kurdish name",
     "icon": "Icon",
     "color": "Color",
     "productCount": "Products",

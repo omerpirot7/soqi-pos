@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import { prisma } from "@/lib/prisma";
 import { requireRole, requireSession } from "@/lib/auth";
@@ -37,8 +37,8 @@ export async function getDashboardData(range: "daily" | "weekly" | "monthly" = "
       take: 5,
     }),
     prisma.$queryRaw<
-      { id: string; name: string; nameAr: string | null; stock: number; minStock: number; unit: string }[]
-    >`SELECT id, name, nameAr, stock, minStock, unit FROM Product
+      { id: string; name: string; nameCkb: string | null; stock: number; minStock: number; unit: string }[]
+    >`SELECT id, name, nameAr as nameCkb, stock, minStock, unit FROM Product
       WHERE isActive = 1 AND stock <= minStock
       ORDER BY stock ASC LIMIT 8`,
   ]);
@@ -76,14 +76,14 @@ export async function getDashboardData(range: "daily" | "weekly" | "monthly" = "
   const topNames = topRows.length
     ? await prisma.product.findMany({
         where: { id: { in: topRows.map((r) => r.productId) } },
-        select: { id: true, name: true, nameAr: true },
+        select: { id: true, name: true, nameCkb: true },
       })
     : [];
   const nameById = new Map(topNames.map((p) => [p.id, p]));
 
   const topProducts = topRows.map((r) => ({
     name: nameById.get(r.productId)?.name ?? "",
-    nameAr: nameById.get(r.productId)?.nameAr ?? null,
+    nameCkb: nameById.get(r.productId)?.nameCkb ?? null,
     qty: r._sum.quantity ?? 0,
     revenue: r._sum.lineTotal ?? 0,
   }));
@@ -217,7 +217,7 @@ export async function findProductByBarcode(code: string) {
 const productSchema = z.object({
   id: z.string().optional(),
   name: z.string().min(1),
-  nameAr: z.string().optional().nullable(),
+  nameCkb: z.string().optional().nullable(),
   barcode: z.string().optional().nullable(),
   sku: z.string().optional().nullable(),
   categoryId: z.string().min(1),
@@ -237,7 +237,7 @@ export async function upsertProduct(input: z.infer<typeof productSchema>) {
   const data = productSchema.parse(input);
   const payload = {
     name: data.name,
-    nameAr: data.nameAr || null,
+    nameCkb: data.nameCkb || null,
     barcode: data.barcode || null,
     sku: data.sku || null,
     categoryId: data.categoryId,
@@ -345,7 +345,7 @@ export async function getInventoryData() {
 export async function upsertCategory(input: {
   id?: string;
   name: string;
-  nameAr?: string;
+  nameCkb?: string;
   icon?: string;
   color?: string;
 }) {
@@ -353,11 +353,11 @@ export async function upsertCategory(input: {
   if (input.id) {
     await prisma.category.update({
       where: { id: input.id },
-      data: { name: input.name, nameAr: input.nameAr, icon: input.icon, color: input.color },
+      data: { name: input.name, nameCkb: input.nameCkb, icon: input.icon, color: input.color },
     });
   } else {
     await prisma.category.create({
-      data: { name: input.name, nameAr: input.nameAr, icon: input.icon, color: input.color },
+      data: { name: input.name, nameCkb: input.nameCkb, icon: input.icon, color: input.color },
     });
   }
   revalidatePath("/categories");
@@ -447,7 +447,7 @@ export async function getSales(filters?: {
           unitPrice: true,
           lineTotal: true,
           costPrice: true,
-          product: { select: { name: true, nameAr: true } },
+          product: { select: { name: true, nameCkb: true } },
         },
       },
     },
@@ -509,7 +509,7 @@ export async function getReportsData(from?: string, to?: string) {
     topIds.length
       ? prisma.product.findMany({
           where: { id: { in: topIds.map(([id]) => id) } },
-          select: { id: true, name: true, nameAr: true },
+          select: { id: true, name: true, nameCkb: true },
         })
       : [],
     cashierRows.length
@@ -528,7 +528,7 @@ export async function getReportsData(from?: string, to?: string) {
     profit,
     margin: revenue > 0 ? (profit / revenue) * 100 : 0,
     bestSellers: topIds.map(([id, agg]) => ({
-      name: productById.get(id)?.nameAr || productById.get(id)?.name || "",
+      name: productById.get(id)?.nameCkb || productById.get(id)?.name || "",
       qty: agg.qty,
       revenue: agg.revenue,
     })),
@@ -594,11 +594,12 @@ export async function upsertUser(input: {
 export async function updateMyLocale(locale: string) {
   const session = await requireSession();
   const value = locale === "en" ? "en" : "ckb";
-  await prisma.user.update({
+  // After a DB reseed, an old session cookie may point at a deleted user id
+  const result = await prisma.user.updateMany({
     where: { id: session.user.id },
     data: { locale: value },
   });
-  return { success: true, locale: value };
+  return { success: result.count > 0, locale: value };
 }
 
 export async function setUserActive(id: string, isActive: boolean) {

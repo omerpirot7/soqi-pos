@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useTranslations, useLocale } from "next-intl";
@@ -36,11 +36,11 @@ import {
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { EmptyState } from "@/components/shared/empty-state";
 
-type Category = { id: string; name: string; nameAr: string | null; color: string | null };
+type Category = { id: string; name: string; nameCkb: string | null; color: string | null };
 type Product = {
   id: string;
   name: string;
-  nameAr: string | null;
+  nameCkb: string | null;
   barcode: string | null;
   sku?: string | null;
   sellPrice: number;
@@ -76,7 +76,7 @@ type CompletedSale = {
     quantity: number;
     unitPrice: number;
     lineTotal: number;
-    product: { name: string; nameAr: string | null };
+    product: { name: string; nameCkb: string | null };
   }[];
 };
 
@@ -114,7 +114,7 @@ export function PosClient({
       const matchQ =
         !q ||
         p.name.toLowerCase().includes(q) ||
-        (p.nameAr || "").includes(q) ||
+        (p.nameCkb || "").includes(q) ||
         (p.barcode || "").includes(q);
       return matchCat && matchQ;
     });
@@ -129,7 +129,7 @@ export function PosClient({
       cart.addItem({
         productId: product.id,
         name: product.name,
-        nameAr: product.nameAr,
+        nameCkb: product.nameCkb,
         barcode: product.barcode,
         unitPrice: toNumber(product.sellPrice),
         costPrice: toNumber(product.costPrice),
@@ -157,7 +157,7 @@ export function PosClient({
         }
         addProduct({
           ...product,
-          category: { id: product.categoryId, name: "", nameAr: null, color: null },
+          category: { id: product.categoryId, name: "", nameCkb: null, color: null },
         } as Product);
       } catch {
         toast.error(t("productNotFound"));
@@ -319,7 +319,7 @@ export function PosClient({
                     : undefined
                 }
               >
-                {c.nameAr || c.name}
+                {c.nameCkb || c.name}
               </button>
             ))}
           </div>
@@ -337,7 +337,7 @@ export function PosClient({
                 <ProductCard
                   key={p.id}
                   name={p.name}
-                  nameAr={p.nameAr}
+                  nameCkb={p.nameCkb}
                   price={toNumber(p.sellPrice)}
                   stock={toNumber(p.stock)}
                   imageUrl={p.imageUrl}
@@ -392,7 +392,7 @@ export function PosClient({
               {cart.items.map((item) => (
                 <div key={item.productId} className="flex items-center gap-2 rounded-xl bg-muted/40 p-2">
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold">{item.nameAr || item.name}</p>
+                    <p className="truncate text-sm font-semibold">{item.nameCkb || item.name}</p>
                     <p className="text-xs text-muted-foreground">
                       {fmt.currency(item.unitPrice)} × {fmt.number(item.quantity)}
                     </p>
@@ -524,7 +524,7 @@ export function PosClient({
               cashierName={completed.cashier.name}
               date={formatDate(completed.createdAt, locale)}
               items={completed.items.map((i) => ({
-                name: i.product.nameAr || i.product.name,
+                name: i.product.nameCkb || i.product.name,
                 quantity: i.quantity,
                 unitPrice: i.unitPrice,
                 lineTotal: i.lineTotal,

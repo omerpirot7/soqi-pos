@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
@@ -6,7 +6,7 @@ import { persist } from "zustand/middleware";
 export type CartItem = {
   productId: string;
   name: string;
-  nameAr?: string | null;
+  nameCkb?: string | null;
   barcode?: string | null;
   unitPrice: number;
   costPrice: number;

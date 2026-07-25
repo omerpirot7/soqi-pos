@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import {
@@ -162,7 +162,7 @@ export function DashboardClient({ initialData }: { initialData: DashData }) {
                     <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
                       {i + 1}
                     </span>
-                    <span className="truncate text-sm font-medium">{p.nameAr || p.name}</span>
+                    <span className="truncate text-sm font-medium">{p.nameCkb || p.name}</span>
                   </div>
                   <Badge variant="secondary">{fmt.number(p.qty)}</Badge>
                 </div>
@@ -186,7 +186,7 @@ export function DashboardClient({ initialData }: { initialData: DashData }) {
             <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
               {data.lowStock.map((p) => (
                 <div key={p.id} className="rounded-xl border bg-amber-50/50 p-3 dark:bg-amber-950/20">
-                  <p className="font-medium">{p.nameAr || p.name}</p>
+                  <p className="font-medium">{p.nameCkb || p.name}</p>
                   <p className="mt-1 text-sm text-muted-foreground">
                     {fmt.number(p.stock)} / {fmt.number(p.minStock)}
                   </p>

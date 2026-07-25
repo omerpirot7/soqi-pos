@@ -16,7 +16,7 @@ export default async function StockAdjustPage({
       products={products.map((p) => ({
         id: p.id,
         name: p.name,
-        nameAr: p.nameAr,
+        nameCkb: p.nameCkb,
         stock: Number(p.stock),
       }))}
     />

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
@@ -15,7 +15,7 @@ import { Checkbox } from "@/components/ui/checkbox-simple";
 type Product = {
   id: string;
   name: string;
-  nameAr: string | null;
+  nameCkb: string | null;
   barcode: string | null;
   sellPrice: number;
 };
@@ -104,7 +104,7 @@ export function LabelsClient({ products: initial }: { products: Product[] }) {
             <CardContent className="flex items-center gap-3 p-4">
               <Checkbox checked={selected.has(p.id)} />
               <div className="min-w-0 flex-1">
-                <p className="truncate font-medium">{p.nameAr || p.name}</p>
+                <p className="truncate font-medium">{p.nameCkb || p.name}</p>
                 <p className="text-sm text-primary">{fmt.currency(p.sellPrice)}</p>
                 <p className="text-xs text-muted-foreground">
                   {p.barcode || t("noBarcode")}
@@ -122,7 +122,7 @@ export function LabelsClient({ products: initial }: { products: Product[] }) {
               key={p.id}
               className="flex w-[200px] flex-col items-center border border-black p-2 text-center"
             >
-              <p className="mb-1 text-xs font-bold">{p.nameAr || p.name}</p>
+              <p className="mb-1 text-xs font-bold">{p.nameCkb || p.name}</p>
               <p className="mb-1 text-sm font-semibold">{fmt.currency(p.sellPrice)}</p>
               {p.barcode && <BarcodeSvg value={p.barcode} />}
             </div>
