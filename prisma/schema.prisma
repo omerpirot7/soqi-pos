@@ -1,0 +1,124 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String     @id @default(cuid())
+  name         String
+  email        String     @unique
+  passwordHash String
+  role         String     @default("CASHIER") // ADMIN | CASHIER | WAREHOUSE
+  locale       String     @default("ckb") // ckb | en
+  isActive     Boolean    @default(true)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  sales        Sale[]
+  stockLogs    StockLog[]
+}
+
+model Category {
+  id        String    @id @default(cuid())
+  name      String
+  nameAr    String?
+  icon      String?
+  color     String?
+  products  Product[]
+  createdAt DateTime  @default(now())
+}
+
+model Supplier {
+  id        String     @id @default(cuid())
+  name      String
+  phone     String?
+  email     String?
+  address   String?
+  notes     String?
+  products  Product[]
+  stockLogs StockLog[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model Product {
+  id         String     @id @default(cuid())
+  name       String
+  nameAr     String?
+  barcode    String?    @unique
+  sku        String?    @unique
+  categoryId String
+  category   Category   @relation(fields: [categoryId], references: [id])
+  supplierId String?
+  supplier   Supplier?  @relation(fields: [supplierId], references: [id])
+  costPrice  Float
+  sellPrice  Float
+  unit       String     @default("piece")
+  stock      Float      @default(0)
+  minStock   Float      @default(5)
+  imageUrl   String?
+  expiresAt  DateTime?
+  isActive   Boolean    @default(true)
+  saleItems  SaleItem[]
+  stockLogs  StockLog[]
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+}
+
+model Sale {
+  id            String     @id @default(cuid())
+  receiptNo     String     @unique
+  cashierId     String
+  cashier       User       @relation(fields: [cashierId], references: [id])
+  subtotal      Float
+  discount      Float      @default(0)
+  total         Float
+  paymentMethod String     // CASH | CARD
+  amountPaid    Float?
+  change        Float?
+  createdAt     DateTime   @default(now())
+  items         SaleItem[]
+}
+
+model SaleItem {
+  id        String  @id @default(cuid())
+  saleId    String
+  sale      Sale    @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Float
+  unitPrice Float
+  costPrice Float
+  lineTotal Float
+}
+
+model StockLog {
+  id         String    @id @default(cuid())
+  productId  String
+  product    Product   @relation(fields: [productId], references: [id])
+  userId     String
+  user       User      @relation(fields: [userId], references: [id])
+  supplierId String?
+  supplier   Supplier? @relation(fields: [supplierId], references: [id])
+  type       String    // SALE | PURCHASE | ADJUSTMENT | INTAKE
+  quantity   Float
+  unitCost   Float?
+  reason     String?   // DAMAGED | EXPIRED | LOST | OTHER
+  note       String?
+  createdAt  DateTime  @default(now())
+}
+
+model StoreSettings {
+  id             String  @id @default("default")
+  storeName      String
+  logoUrl        String?
+  address        String?
+  phone          String?
+  currency       String  @default("IQD")
+  receiptFooter  String?
+  locale         String  @default("ckb")
+  receiptWidthMm Int     @default(80)
+}

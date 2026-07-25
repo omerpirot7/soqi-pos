@@ -1,0 +1,88 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "free-port-3000",
+      "type": "shell",
+      "command": "node scripts/free-port.js",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared",
+        "showReuseMessage": false,
+        "close": true,
+        "echo": false
+      }
+    },
+    {
+      "label": "ensure-build",
+      "type": "shell",
+      "command": "node -e \"try{require('fs').accessSync('.next/BUILD_ID')}catch{process.exit(1)}\" || node ./node_modules/next/dist/bin/next build",
+      "options": {
+        "shell": {
+          "executable": "cmd.exe",
+          "args": ["/d", "/c"]
+        }
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared",
+        "showReuseMessage": false
+      }
+    },
+    {
+      "label": "prod-server",
+      "dependsOn": ["free-port-3000", "ensure-build"],
+      "dependsOrder": "sequence",
+      "type": "shell",
+      "command": "node ./node_modules/next/dist/bin/next start -p 3000",
+      "isBackground": true,
+      "options": {
+        "env": {
+          "NODE_OPTIONS": ""
+        }
+      },
+      "problemMatcher": {
+        "owner": "nextjs",
+        "pattern": { "regexp": "^$" },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "Starting\\.\\.\\.",
+          "endsPattern": "started server on|Ready|Local:"
+        }
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "focus": false
+      }
+    },
+    {
+      "label": "dev-server",
+      "dependsOn": ["free-port-3000"],
+      "type": "shell",
+      "command": "node ./node_modules/next/dist/bin/next dev --turbo -p 3000",
+      "isBackground": true,
+      "options": {
+        "env": {
+          "NODE_OPTIONS": ""
+        }
+      },
+      "problemMatcher": {
+        "owner": "nextjs",
+        "pattern": { "regexp": "^$" },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "Starting\\.\\.\\.",
+          "endsPattern": "Ready in"
+        }
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "focus": false
+      }
+    }
+  ]
+}

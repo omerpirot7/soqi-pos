@@ -1,0 +1,21 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run POS (F5)",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:3000/ckb",
+      "webRoot": "${workspaceFolder}",
+      "preLaunchTask": "prod-server"
+    },
+    {
+      "name": "Run POS (dev — slower clicks)",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:3000/ckb",
+      "webRoot": "${workspaceFolder}",
+      "preLaunchTask": "dev-server"
+    }
+  ]
+}

@@ -1,4 +1,16 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {};
+import createNextIntlPlugin from "next-intl/plugin";
 
-export default nextConfig;
+const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
+
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  images: {
+    remotePatterns: [],
+  },
+  experimental: {
+    // Tree-shake barrel imports so dev compiles touch far fewer modules
+    optimizePackageImports: ["lucide-react", "recharts", "date-fns"],
+  },
+};
+
+export default withNextIntl(nextConfig);

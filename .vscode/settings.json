@@ -1,0 +1,7 @@
+{
+  "debug.javascript.autoAttachFilter": "disabled",
+  "debug.javascript.terminalOptions": {
+    "autoAttachMode": "never"
+  },
+  "npm.packageManager": "npm"
+}
