@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Cairo, Noto_Sans } from "next/font/google";
+import { Noto_Sans, Noto_Sans_Arabic } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
@@ -7,15 +7,16 @@ import { routing, isRtl, type Locale } from "@/i18n/routing";
 import { Providers } from "@/components/providers";
 import "../globals.css";
 
-const cairo = Cairo({
-  subsets: ["arabic", "latin"],
-  variable: "--font-cairo",
+const notoArabic = Noto_Sans_Arabic({
+  subsets: ["arabic"],
+  weight: "variable",
   display: "swap",
+  fallback: ["Tahoma", "Arial", "sans-serif"],
 });
 
 const noto = Noto_Sans({
   subsets: ["latin"],
-  variable: "--font-noto",
+  weight: "variable",
   display: "swap",
 });
 
@@ -45,7 +46,7 @@ export default async function LocaleLayout({
 
   return (
     <html lang={locale} dir={dir} suppressHydrationWarning>
-      <body className={`${cairo.variable} ${noto.variable} font-sans`}>
+      <body className={locale === "ckb" ? notoArabic.className : noto.className}>
         <NextIntlClientProvider messages={messages}>
           <Providers>{children}</Providers>
         </NextIntlClientProvider>
