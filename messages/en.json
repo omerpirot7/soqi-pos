@@ -31,7 +31,10 @@
     "next": "Next",
     "offline": "Offline",
     "online": "Online",
-    "page": "Page"
+    "page": "Page",
+    "accentColor": "Accent color",
+    "customColor": "Custom color",
+    "resetColor": "Reset to green"
   },
   "nav": {
     "dashboard": "Dashboard",

@@ -31,7 +31,10 @@
     "next": "دواتر",
     "offline": "دەرهێڵ",
     "online": "سەرهێڵ",
-    "page": "لاپەڕە"
+    "page": "لاپەڕە",
+    "accentColor": "ڕەنگی سەرەکی",
+    "customColor": "ڕەنگی تایبەت",
+    "resetColor": "گەڕاندنەوە بۆ سەوز"
   },
   "nav": {
     "dashboard": "داشبۆرد",

@@ -53,7 +53,7 @@ Most POS tools are either too heavy for a mini-market or too crude for serious d
 ```text
 Frontend     Next.js 14 (App Router) · TypeScript · Tailwind CSS · shadcn/ui · Zustand · Recharts
 Auth         NextAuth.js · JWT sessions · role-based route guards
-Data         Prisma ORM · SQLite (local) · ready for PostgreSQL
+Data         Prisma ORM · PostgreSQL (Neon / any Postgres host)
 i18n         next-intl · locale routes (/ckb, /en) · RTL/LTR · Intl formatters
 Extras       react-hot-toast · JsBarcode · jsPDF · SheetJS (xlsx)
 ```
@@ -65,7 +65,7 @@ flowchart LR
   C --> D[NextAuth RBAC]
   D --> E[Server Actions]
   E --> F[Prisma]
-  F --> G[(SQLite / PostgreSQL)]
+  F --> G[(PostgreSQL)]
   B --> H[Zustand Cart]
   B --> I[Receipt / Labels Print]
 ```
@@ -113,13 +113,15 @@ npm install
 cp .env.example .env
 ```
 
-Edit `.env` if needed (defaults work for local SQLite):
+Create a **free PostgreSQL** database on [Neon](https://console.neon.tech), then put the connection string in `.env`:
 
 ```env
-DATABASE_URL="file:./dev.db"
+DATABASE_URL="postgresql://USER:PASSWORD@ep-xxxx.REGION.aws.neon.tech/neondb?sslmode=require"
 NEXTAUTH_URL="http://localhost:3000"
 NEXTAUTH_SECRET="replace-with-a-long-random-string"
 ```
+
+Full deploy guide (Neon + Vercel + custom domain): see **[DEPLOY.md](./DEPLOY.md)**.
 
 ### 3. Database + seed
 

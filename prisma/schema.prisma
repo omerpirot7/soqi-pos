@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -24,7 +24,7 @@ model User {
 model Category {
   id        String    @id @default(cuid())
   name      String
-  nameCkb   String?   @map("nameAr")
+  nameCkb   String?
   icon      String?
   color     String?
   products  Product[]
@@ -47,7 +47,7 @@ model Supplier {
 model Product {
   id         String     @id @default(cuid())
   name       String
-  nameCkb    String?    @map("nameAr")
+  nameCkb    String?
   barcode    String?    @unique
   sku        String?    @unique
   categoryId String

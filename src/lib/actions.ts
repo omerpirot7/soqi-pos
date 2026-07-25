@@ -19,7 +19,7 @@ export async function getDashboardData(range: "daily" | "weekly" | "monthly" = "
   start.setDate(start.getDate() - days + 1);
   start.setHours(0, 0, 0, 0);
 
-  const [today, periodSales, topRows, lowStock] = await Promise.all([
+  const [today, periodSales, topRows, lowStockCandidates] = await Promise.all([
     prisma.sale.aggregate({
       where: { createdAt: { gte: startOfToday } },
       _sum: { total: true },
@@ -36,15 +36,26 @@ export async function getDashboardData(range: "daily" | "weekly" | "monthly" = "
       orderBy: { _sum: { quantity: "desc" } },
       take: 5,
     }),
-    prisma.$queryRaw<
-      { id: string; name: string; nameCkb: string | null; stock: number; minStock: number; unit: string }[]
-    >`SELECT id, name, nameAr as nameCkb, stock, minStock, unit FROM Product
-      WHERE isActive = 1 AND stock <= minStock
-      ORDER BY stock ASC LIMIT 8`,
+    prisma.product.findMany({
+      where: { isActive: true },
+      select: {
+        id: true,
+        name: true,
+        nameCkb: true,
+        stock: true,
+        minStock: true,
+        unit: true,
+      },
+      orderBy: { stock: "asc" },
+      take: 80,
+    }),
   ]);
 
   const todayTotal = today._sum.total ?? 0;
   const todayCount = today._count._all;
+  const lowStock = lowStockCandidates
+    .filter((p) => p.stock <= p.minStock)
+    .slice(0, 8);
 
   const trendMap = new Map<string, number>();
   for (let i = 0; i < days; i++) {

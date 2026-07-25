@@ -21,6 +21,10 @@ import {
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { getDashboardData } from "@/lib/actions";
+import {
+  ACCENT_CHANGE_EVENT,
+  readPrimaryCssColor,
+} from "@/lib/accent-color";
 import { useFormatters } from "@/hooks/use-formatters";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatCard } from "@/components/shared/stat-card";
@@ -39,7 +43,15 @@ export function DashboardClient({ initialData }: { initialData: DashData }) {
   const [range, setRange] = useState<"daily" | "weekly" | "monthly">("daily");
   const [data, setData] = useState<DashData | null>(initialData);
   const [pending, startTransition] = useTransition();
+  const [chartColor, setChartColor] = useState("hsl(158 64% 28%)");
   const loadedRange = useRef<typeof range>("daily");
+
+  useEffect(() => {
+    const syncChartColor = () => setChartColor(readPrimaryCssColor());
+    syncChartColor();
+    window.addEventListener(ACCENT_CHANGE_EVENT, syncChartColor);
+    return () => window.removeEventListener(ACCENT_CHANGE_EVENT, syncChartColor);
+  }, []);
 
   useEffect(() => {
     if (loadedRange.current === range) return;
@@ -127,8 +139,8 @@ export function DashboardClient({ initialData }: { initialData: DashData }) {
               <AreaChart data={data?.trend || []}>
                 <defs>
                   <linearGradient id="salesFill" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="hsl(158 64% 28%)" stopOpacity={0.35} />
-                    <stop offset="100%" stopColor="hsl(158 64% 28%)" stopOpacity={0} />
+                    <stop offset="0%" stopColor={chartColor} stopOpacity={0.35} />
+                    <stop offset="100%" stopColor={chartColor} stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
@@ -141,7 +153,7 @@ export function DashboardClient({ initialData }: { initialData: DashData }) {
                 <Area
                   type="monotone"
                   dataKey="total"
-                  stroke="hsl(158 64% 28%)"
+                  stroke={chartColor}
                   fill="url(#salesFill)"
                   strokeWidth={2}
                 />

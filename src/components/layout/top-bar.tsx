@@ -6,6 +6,7 @@ import { LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./theme-toggle";
 import { LanguageSwitcher } from "./language-switcher";
+import { AccentColorPicker } from "./accent-color-picker";
 import { Badge } from "@/components/ui/badge";
 
 export function TopBar({ storeName }: { storeName: string }) {
@@ -21,6 +22,7 @@ export function TopBar({ storeName }: { storeName: string }) {
       </div>
       <div className="flex items-center gap-2">
         <LanguageSwitcher />
+        <AccentColorPicker />
         <ThemeToggle />
         {session?.user && (
           <div className="hidden items-center gap-2 rounded-xl border bg-card px-3 py-1.5 sm:flex">
