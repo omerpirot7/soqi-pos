@@ -13,6 +13,8 @@ import {
   Search,
   Printer,
   ShoppingBag,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { completeSale, findProductByBarcode } from "@/lib/actions";
@@ -205,6 +207,9 @@ export function PosClient({
   const locale = useLocale();
   const fmt = useFormatters();
   const searchRef = useRef<HTMLInputElement>(null);
+  const categoryScrollRef = useRef<HTMLDivElement>(null);
+  const [canScrollStart, setCanScrollStart] = useState(false);
+  const [canScrollEnd, setCanScrollEnd] = useState(false);
   const [products, setProducts] = useState(initialProducts);
   const [categoryId, setCategoryId] = useState<string>("all");
   const [query, setQuery] = useState("");
@@ -231,6 +236,47 @@ export function PosClient({
       return matchCat && matchQ;
     });
   }, [products, categoryId, query]);
+
+  const updateCategoryScrollHints = useCallback(() => {
+    const el = categoryScrollRef.current;
+    if (!el) return;
+    const max = el.scrollWidth - el.clientWidth;
+    if (max <= 2) {
+      setCanScrollStart(false);
+      setCanScrollEnd(false);
+      return;
+    }
+    const pos = Math.abs(el.scrollLeft);
+    setCanScrollStart(pos > 4);
+    setCanScrollEnd(pos < max - 4);
+  }, []);
+
+  const scrollCategories = useCallback((direction: "start" | "end") => {
+    const el = categoryScrollRef.current;
+    if (!el) return;
+    const isRtl = getComputedStyle(el).direction === "rtl";
+    const step = 140;
+    const delta =
+      direction === "start" ? (isRtl ? step : -step) : isRtl ? -step : step;
+    el.scrollBy({ left: delta, behavior: "smooth" });
+  }, []);
+
+  useEffect(() => {
+    updateCategoryScrollHints();
+    const raf = requestAnimationFrame(updateCategoryScrollHints);
+    const el = categoryScrollRef.current;
+    if (!el) return;
+    el.addEventListener("scroll", updateCategoryScrollHints, { passive: true });
+    const ro = new ResizeObserver(updateCategoryScrollHints);
+    ro.observe(el);
+    window.addEventListener("resize", updateCategoryScrollHints);
+    return () => {
+      cancelAnimationFrame(raf);
+      el.removeEventListener("scroll", updateCategoryScrollHints);
+      ro.disconnect();
+      window.removeEventListener("resize", updateCategoryScrollHints);
+    };
+  }, [categories, updateCategoryScrollHints]);
 
   const addProduct = useCallback(
     (product: Product) => {
@@ -409,7 +455,47 @@ export function PosClient({
               autoFocus
             />
           </div>
-          <div className="flex gap-2 overflow-x-auto pb-1">
+          <div className="relative">
+            {canScrollStart && (
+              <>
+                <div
+                  className="pointer-events-none absolute inset-y-0 start-0 z-10 w-10 rounded-s-lg bg-gradient-to-e from-background to-transparent"
+                  aria-hidden
+                />
+                <button
+                  type="button"
+                  onClick={() => scrollCategories("start")}
+                  className="absolute start-1 top-1/2 z-20 flex h-7 w-7 -translate-y-1/2 items-center justify-center text-muted-foreground/70 transition-colors hover:text-foreground"
+                  aria-label="Scroll categories start"
+                >
+                  <ChevronLeft className="h-5 w-5 rtl:rotate-180" />
+                </button>
+              </>
+            )}
+            {canScrollEnd && (
+              <>
+                <div
+                  className="pointer-events-none absolute inset-y-0 end-0 z-10 w-10 rounded-e-lg bg-gradient-to-l from-background to-transparent"
+                  aria-hidden
+                />
+                <button
+                  type="button"
+                  onClick={() => scrollCategories("end")}
+                  className="absolute end-1 top-1/2 z-20 flex h-7 w-7 -translate-y-1/2 items-center justify-center text-muted-foreground/70 transition-colors hover:text-foreground"
+                  aria-label="Scroll categories end"
+                >
+                  <ChevronRight className="h-5 w-5 rtl:rotate-180" />
+                </button>
+              </>
+            )}
+            <div
+              ref={categoryScrollRef}
+              className={cn(
+                "flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+                canScrollStart ? "ps-7" : "ps-0",
+                canScrollEnd ? "pe-7" : "pe-0"
+              )}
+            >
             <button
               type="button"
               onClick={() => setCategoryId("all")}
@@ -442,6 +528,7 @@ export function PosClient({
                 {c.nameCkb || c.name}
               </button>
             ))}
+            </div>
           </div>
           {!online && (
             <Badge variant="warning" className="w-fit">
@@ -450,7 +537,7 @@ export function PosClient({
           )}
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto rounded-xl border bg-muted/20 p-3 no-print">
+        <div className="min-h-0 flex-1 overflow-y-auto rounded-xl border bg-muted/20 p-3 no-print [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {filtered.length ? (
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
               {filtered.map((p) => (
