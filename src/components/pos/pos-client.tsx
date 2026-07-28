@@ -12,6 +12,7 @@ import {
   Banknote,
   Search,
   Printer,
+  ShoppingBag,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { completeSale, findProductByBarcode } from "@/lib/actions";
@@ -81,6 +82,115 @@ type CompletedSale = {
   }[];
 };
 
+function PosCartPanel({
+  className,
+  onCheckout,
+  onHold,
+  onClear,
+  onResumeHeld,
+  compactEmpty,
+}: {
+  className?: string;
+  onCheckout: () => void;
+  onHold: () => void;
+  onClear: () => void;
+  onResumeHeld: (id: string) => void;
+  compactEmpty?: boolean;
+}) {
+  const t = useTranslations("pos");
+  const fmt = useFormatters();
+  const cart = useCartStore();
+  const holdStore = useHoldSalesStore();
+
+  return (
+    <div className={cn("flex min-h-0 flex-col bg-card", className)}>
+      <div className="flex items-center justify-between border-b px-4 py-3">
+        <h2 className="text-lg font-bold">{t("cart")}</h2>
+        <div className="flex gap-1">
+          {holdStore.held.length > 0 && (
+            <Badge variant="secondary">{holdStore.held.length}</Badge>
+          )}
+          <Button variant="ghost" size="icon" onClick={onHold} disabled={!cart.items.length} title={t("holdSale")}>
+            <Pause className="h-4 w-4" />
+          </Button>
+          <Button variant="ghost" size="icon" onClick={onClear} disabled={!cart.items.length}>
+            <Trash2 className="h-4 w-4 text-destructive" />
+          </Button>
+        </div>
+      </div>
+
+      {holdStore.held.length > 0 && (
+        <div className="flex gap-2 overflow-x-auto border-b px-3 py-2">
+          {holdStore.held.map((h) => (
+            <Button key={h.id} variant="outline" size="sm" onClick={() => onResumeHeld(h.id)}>
+              <Play className="h-3 w-3" />
+              {h.label}
+            </Button>
+          ))}
+        </div>
+      )}
+
+      <div className="min-h-0 flex-1 overflow-y-auto p-3">
+        {cart.items.length ? (
+          <div className="space-y-2">
+            {cart.items.map((item) => (
+              <div key={item.productId} className="flex items-center gap-2 rounded-xl bg-muted/40 p-2">
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-semibold">{item.nameCkb || item.name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {fmt.currency(item.unitPrice)} × {fmt.number(item.quantity)}
+                  </p>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => cart.decrement(item.productId)}>
+                    <Minus className="h-4 w-4" />
+                  </Button>
+                  <span className="w-8 text-center font-bold">{fmt.number(item.quantity)}</span>
+                  <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => cart.increment(item.productId)}>
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+                <p className="w-20 text-end text-sm font-bold">
+                  {fmt.currency(item.unitPrice * item.quantity)}
+                </p>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <EmptyState
+            title={t("emptyCart")}
+            className={cn("border-0", compactEmpty ? "py-6" : "h-full py-10")}
+          />
+        )}
+      </div>
+
+      <div className="space-y-3 border-t p-4">
+        <div className="flex items-center justify-between text-sm">
+          <span className="text-muted-foreground">{t("subtotal")}</span>
+          <span className="font-medium">{fmt.currency(cart.subtotal())}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">{t("discount")}</span>
+          <Input
+            type="number"
+            min={0}
+            value={cart.discount || ""}
+            onChange={(e) => cart.setDiscount(Number(e.target.value) || 0)}
+            className="h-10"
+          />
+        </div>
+        <div className="flex items-center justify-between text-xl font-bold">
+          <span>{t("total")}</span>
+          <span className="text-primary">{fmt.currency(cart.total())}</span>
+        </div>
+        <Button size="xl" className="w-full" disabled={!cart.items.length} onClick={onCheckout}>
+          {t("completeSale")}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 export function PosClient({
   categories,
   products: initialProducts,
@@ -100,6 +210,7 @@ export function PosClient({
   const [query, setQuery] = useState("");
   const [pending, startTransition] = useTransition();
   const [showPayment, setShowPayment] = useState(false);
+  const [showMobileCart, setShowMobileCart] = useState(false);
   const [showClear, setShowClear] = useState(false);
   const [completed, setCompleted] = useState<CompletedSale | null>(null);
   const [online, setOnline] = useState(true);
@@ -268,10 +379,18 @@ export function PosClient({
     }
   }
 
+  function openCheckout() {
+    cart.setAmountPaid(cart.total());
+    setShowMobileCart(false);
+    setShowPayment(true);
+  }
+
+  const cartItemCount = cart.items.reduce((sum, item) => sum + item.quantity, 0);
+
   return (
     <div className="flex h-[calc(100vh-5.5rem)] flex-col gap-3 lg:flex-row animate-fade-in">
       {/* Products */}
-      <div className="flex min-h-0 flex-1 flex-col gap-3">
+      <div className="flex min-h-0 flex-1 flex-col gap-3 pb-[calc(4.25rem+env(safe-area-inset-bottom,0px))] lg:pb-0">
         <div className="flex flex-col gap-2 no-print">
           <div className="relative">
             <Search className="absolute start-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
@@ -351,105 +470,64 @@ export function PosClient({
             <EmptyState title={tCommon("noResults")} className="h-full border-0" />
           )}
         </div>
-        <p className="text-center text-xs text-muted-foreground no-print">{t("shortcuts")}</p>
+        <p className="hidden text-center text-xs text-muted-foreground no-print lg:block">{t("shortcuts")}</p>
       </div>
 
-      {/* Cart */}
-      <div className="flex w-full flex-col rounded-xl border bg-card shadow-sm lg:w-[380px] xl:w-[420px] no-print">
-        <div className="flex items-center justify-between border-b px-4 py-3">
-          <h2 className="text-lg font-bold">{t("cart")}</h2>
-          <div className="flex gap-1">
-            {holdStore.held.length > 0 && (
-              <Badge variant="secondary">{holdStore.held.length}</Badge>
-            )}
-            <Button variant="ghost" size="icon" onClick={holdCurrent} disabled={!cart.items.length} title={t("holdSale")}>
-              <Pause className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setShowClear(true)}
-              disabled={!cart.items.length}
-            >
-              <Trash2 className="h-4 w-4 text-destructive" />
-            </Button>
-          </div>
-        </div>
+      {/* Desktop cart */}
+      <div className="hidden w-[380px] flex-col rounded-xl border bg-card shadow-sm xl:w-[420px] lg:flex no-print">
+        <PosCartPanel
+          className="h-full rounded-xl"
+          onCheckout={openCheckout}
+          onHold={holdCurrent}
+          onClear={() => setShowClear(true)}
+          onResumeHeld={resumeHeld}
+        />
+      </div>
 
-        {holdStore.held.length > 0 && (
-          <div className="flex gap-2 overflow-x-auto border-b px-3 py-2">
-            {holdStore.held.map((h) => (
-              <Button key={h.id} variant="outline" size="sm" onClick={() => resumeHeld(h.id)}>
-                <Play className="h-3 w-3" />
-                {h.label}
-              </Button>
-            ))}
-          </div>
-        )}
-
-        <div className="min-h-0 flex-1 overflow-y-auto p-3">
-          {cart.items.length ? (
-            <div className="space-y-2">
-              {cart.items.map((item) => (
-                <div key={item.productId} className="flex items-center gap-2 rounded-xl bg-muted/40 p-2">
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold">{item.nameCkb || item.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {fmt.currency(item.unitPrice)} × {fmt.number(item.quantity)}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => cart.decrement(item.productId)}>
-                      <Minus className="h-4 w-4" />
-                    </Button>
-                    <span className="w-8 text-center font-bold">{fmt.number(item.quantity)}</span>
-                    <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => cart.increment(item.productId)}>
-                      <Plus className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  <p className="w-20 text-end text-sm font-bold">
-                    {fmt.currency(item.unitPrice * item.quantity)}
-                  </p>
-                </div>
-              ))}
+      {/* Mobile cart bar */}
+      <div className="fixed inset-x-0 bottom-0 z-30 border-t bg-card/95 p-3 shadow-[0_-4px_24px_rgba(0,0,0,0.08)] backdrop-blur-lg no-print pb-[max(0.75rem,env(safe-area-inset-bottom,0px))] lg:hidden">
+        <div className="flex items-stretch gap-2">
+          <button
+            type="button"
+            onClick={() => setShowMobileCart(true)}
+            className="flex min-w-0 flex-1 items-center gap-3 rounded-xl bg-muted/60 px-3 py-2.5 text-start transition-colors hover:bg-muted"
+          >
+            <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
+              <ShoppingBag className="h-4 w-4" />
+              {cartItemCount > 0 && (
+                <span className="absolute -end-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground">
+                  {fmt.number(cartItemCount)}
+                </span>
+              )}
             </div>
-          ) : (
-            <EmptyState title={t("emptyCart")} className="h-full border-0 py-10" />
-          )}
-        </div>
-
-        <div className="space-y-3 border-t p-4">
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">{t("subtotal")}</span>
-            <span className="font-medium">{fmt.currency(cart.subtotal())}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">{t("discount")}</span>
-            <Input
-              type="number"
-              min={0}
-              value={cart.discount || ""}
-              onChange={(e) => cart.setDiscount(Number(e.target.value) || 0)}
-              className="h-10"
-            />
-          </div>
-          <div className="flex items-center justify-between text-xl font-bold">
-            <span>{t("total")}</span>
-            <span className="text-primary">{fmt.currency(cart.total())}</span>
-          </div>
+            <div className="min-w-0">
+              <p className="text-xs text-muted-foreground">{t("cart")}</p>
+              <p className="truncate text-base font-bold">{fmt.currency(cart.total())}</p>
+            </div>
+          </button>
           <Button
-            size="xl"
-            className="w-full"
+            className="shrink-0 self-stretch px-4"
             disabled={!cart.items.length}
-            onClick={() => {
-              cart.setAmountPaid(cart.total());
-              setShowPayment(true);
-            }}
+            onClick={openCheckout}
           >
             {t("completeSale")}
           </Button>
         </div>
       </div>
+
+      {/* Mobile cart sheet */}
+      <Dialog open={showMobileCart} onOpenChange={setShowMobileCart}>
+        <DialogContent className="!fixed !inset-x-0 !bottom-0 !top-auto !left-0 flex max-h-[88vh] w-full !max-w-none !translate-x-0 !translate-y-0 flex-col gap-0 overflow-hidden rounded-t-2xl border-t p-0 sm:!rounded-t-2xl">
+          <PosCartPanel
+            className="max-h-[88vh]"
+            compactEmpty
+            onCheckout={openCheckout}
+            onHold={holdCurrent}
+            onClear={() => setShowClear(true)}
+            onResumeHeld={resumeHeld}
+          />
+        </DialogContent>
+      </Dialog>
 
       {/* Payment dialog */}
       <Dialog open={showPayment} onOpenChange={setShowPayment}>

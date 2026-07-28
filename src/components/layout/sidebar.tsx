@@ -204,14 +204,6 @@ export function Sidebar({ storeName }: { storeName: string }) {
             <span className="truncate text-[clamp(0.62rem,2.1vw,0.8rem)] font-semibold">
               {t(item.key as Parameters<typeof t>[0])}
             </span>
-            <span
-              className={cn(
-                "absolute -bottom-1 h-1 w-6 rounded-full transition-all duration-300",
-                active
-                  ? "bg-primary scale-100"
-                  : "bg-current/60 scale-0 group-hover:scale-100"
-              )}
-            />
           </Link>
         );
       })}
