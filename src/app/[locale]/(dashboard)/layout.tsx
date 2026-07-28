@@ -16,7 +16,7 @@ export default async function DashboardLayout({
   const storeName = settings?.storeName || "سۆقی";
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="min-h-screen bg-background">
       <Sidebar storeName={storeName} />
       <div className="flex min-w-0 flex-1 flex-col">
         <TopBar storeName={storeName} />
