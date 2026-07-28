@@ -13,6 +13,7 @@ type ReceiptItem = {
 
 type ReceiptPrintLayoutProps = {
   storeName: string;
+  logoUrl?: string | null;
   address?: string | null;
   phone?: string | null;
   receiptNo: string;
@@ -32,6 +33,7 @@ type ReceiptPrintLayoutProps = {
 
 export function ReceiptPrintLayout({
   storeName,
+  logoUrl,
   address,
   phone,
   receiptNo,
@@ -60,6 +62,12 @@ export function ReceiptPrintLayout({
       lang={locale}
     >
       <div className="text-center">
+        {logoUrl && (
+          <div className="mb-2 flex justify-center">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={logoUrl} alt="" className="max-h-14 max-w-[120px] object-contain" />
+          </div>
+        )}
         <h2 className="text-lg font-bold">{storeName}</h2>
         {address && <p className="text-xs">{address}</p>}
         {phone && <p className="text-xs">{phone}</p>}

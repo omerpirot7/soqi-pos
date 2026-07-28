@@ -1,6 +1,5 @@
 ﻿"use client";
 
-import Image from "next/image";
 import { Package } from "lucide-react";
 import { useFormatters } from "@/hooks/use-formatters";
 import { cn } from "@/lib/utils";
@@ -41,7 +40,8 @@ export function ProductCard({
         style={color ? { backgroundColor: `${color}22` } : undefined}
       >
         {imageUrl ? (
-          <Image src={imageUrl} alt={name} fill className="object-cover" />
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={imageUrl} alt={nameCkb || name} className="h-full w-full object-cover" />
         ) : (
           <Package className="h-10 w-10 text-muted-foreground/50 transition-transform group-hover:scale-110" />
         )}

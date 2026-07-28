@@ -77,6 +77,7 @@ const emptyForm = {
   unit: "piece",
   stock: 0,
   minStock: 5,
+  imageUrl: "",
   expiresAt: "",
 };
 
@@ -151,6 +152,7 @@ export function InventoryClient({
       unit: p.unit,
       stock: toNumber(p.stock),
       minStock: toNumber(p.minStock),
+      imageUrl: p.imageUrl || "",
       expiresAt: p.expiresAt ? new Date(p.expiresAt).toISOString().slice(0, 10) : "",
     });
     setOpen(true);
@@ -176,6 +178,7 @@ export function InventoryClient({
           unit: form.unit,
           stock: form.stock,
           minStock: form.minStock,
+          imageUrl: form.imageUrl || null,
           expiresAt: form.expiresAt || null,
         });
         toast.success(tCommon("success"));
@@ -357,6 +360,12 @@ export function InventoryClient({
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {filtered.map((p) => (
             <Card key={p.id} className="overflow-hidden">
+              {p.imageUrl && (
+                <div className="relative h-28 w-full bg-muted/50">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={p.imageUrl} alt="" className="h-full w-full object-cover" />
+                </div>
+              )}
               <CardContent className="p-4">
                 <div className="flex items-start justify-between gap-2">
                   <div>
@@ -400,6 +409,15 @@ export function InventoryClient({
             <div className="space-y-2 sm:col-span-2">
               <Label>{t("nameCkb")}</Label>
               <Input value={form.nameCkb} onChange={(e) => setForm({ ...form, nameCkb: e.target.value })} />
+            </div>
+            <div className="space-y-2 sm:col-span-2">
+              <Label>{t("image")}</Label>
+              <Input
+                type="url"
+                placeholder="https://..."
+                value={form.imageUrl}
+                onChange={(e) => setForm({ ...form, imageUrl: e.target.value })}
+              />
             </div>
             <div className="space-y-2">
               <Label>{t("barcode")}</Label>

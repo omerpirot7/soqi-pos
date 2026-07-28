@@ -54,6 +54,7 @@ type Product = {
 
 type Settings = {
   storeName: string;
+  logoUrl?: string | null;
   address: string | null;
   phone: string | null;
   receiptFooter: string | null;
@@ -518,6 +519,7 @@ export function PosClient({
           {completed && (
             <ReceiptPrintLayout
               storeName={settings?.storeName || tCommon("appName")}
+              logoUrl={settings?.logoUrl}
               address={settings?.address}
               phone={settings?.phone}
               receiptNo={completed.receiptNo}

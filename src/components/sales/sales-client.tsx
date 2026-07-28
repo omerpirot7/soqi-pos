@@ -53,6 +53,7 @@ type Sale = {
 
 type Settings = {
   storeName: string;
+  logoUrl?: string | null;
   address: string | null;
   phone: string | null;
   receiptFooter: string | null;
@@ -93,12 +94,14 @@ export function SalesClient({
   const [cashierFilter, setCashierFilter] = useState("all");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
+  const [reportFrom, setReportFrom] = useState("");
+  const [reportTo, setReportTo] = useState("");
   const [selected, setSelected] = useState<Sale | null>(null);
 
   useEffect(() => {
-    if (!isAdmin || tab !== "reports" || reports) return;
+    if (!isAdmin || tab !== "reports") return;
     startReports(async () => {
-      const data = await getReportsData();
+      const data = await getReportsData(reportFrom || undefined, reportTo || undefined);
       setReports({
         revenue: Number(data.revenue),
         cost: Number(data.cost),
@@ -108,7 +111,7 @@ export function SalesClient({
         byCashier: data.byCashier,
       });
     });
-  }, [isAdmin, tab, reports]);
+  }, [isAdmin, tab, reportFrom, reportTo]);
 
   const filtered = useMemo(() => {
     return sales.filter((s) => {
@@ -267,6 +270,20 @@ export function SalesClient({
 
         {isAdmin && (
           <TabsContent value="reports" className="space-y-4">
+            <div className="flex flex-wrap gap-2">
+              <Input
+                type="date"
+                value={reportFrom}
+                onChange={(e) => setReportFrom(e.target.value)}
+                className="w-auto"
+              />
+              <Input
+                type="date"
+                value={reportTo}
+                onChange={(e) => setReportTo(e.target.value)}
+                className="w-auto"
+              />
+            </div>
             {reportsPending && !reports ? (
               <div className="grid gap-4 sm:grid-cols-3">
                 <Skeleton className="h-28" />
@@ -327,6 +344,7 @@ export function SalesClient({
           {selected && (
             <ReceiptPrintLayout
               storeName={settings?.storeName || tCommon("appName")}
+              logoUrl={settings?.logoUrl}
               address={settings?.address}
               phone={settings?.phone}
               receiptNo={selected.receiptNo}

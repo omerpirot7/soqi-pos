@@ -40,6 +40,7 @@ export function SettingsClient({ settings }: { settings: Settings }) {
     receiptFooter: settings.receiptFooter || "",
     locale: settings.locale,
     receiptWidthMm: settings.receiptWidthMm,
+    logoUrl: settings.logoUrl || "",
   });
   const [pending, startTransition] = useTransition();
 
@@ -58,6 +59,7 @@ export function SettingsClient({ settings }: { settings: Settings }) {
           receiptFooter: form.receiptFooter,
           locale: form.locale,
           receiptWidthMm: form.receiptWidthMm,
+          logoUrl: form.logoUrl.trim() || null,
         });
         toast.success(t("saved"));
       } catch {
@@ -76,6 +78,15 @@ export function SettingsClient({ settings }: { settings: Settings }) {
             <Input
               value={form.storeName}
               onChange={(e) => setForm({ ...form, storeName: e.target.value })}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>{t("logo")}</Label>
+            <Input
+              type="url"
+              placeholder="https://..."
+              value={form.logoUrl}
+              onChange={(e) => setForm({ ...form, logoUrl: e.target.value })}
             />
           </div>
           <div className="space-y-2">

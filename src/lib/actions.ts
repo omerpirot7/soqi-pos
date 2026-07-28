@@ -173,10 +173,11 @@ export async function completeSale(input: z.infer<typeof saleSchema>) {
     });
 
     for (const item of data.items) {
-      await tx.product.update({
-        where: { id: item.productId },
+      const updated = await tx.product.updateMany({
+        where: { id: item.productId, stock: { gte: item.quantity } },
         data: { stock: { decrement: item.quantity } },
       });
+      if (updated.count === 0) throw new Error("INSUFFICIENT_STOCK");
       await tx.stockLog.create({
         data: {
           productId: item.productId,
@@ -256,7 +257,7 @@ export async function upsertProduct(input: z.infer<typeof productSchema>) {
     costPrice: data.costPrice,
     sellPrice: data.sellPrice,
     unit: data.unit ?? "piece",
-    stock: data.stock ?? 0,
+    stock: Math.max(0, data.stock ?? 0),
     minStock: data.minStock ?? 5,
     imageUrl: data.imageUrl || null,
     expiresAt: data.expiresAt ? new Date(data.expiresAt) : null,
@@ -318,11 +319,13 @@ export async function stockAdjust(input: {
 }) {
   const session = await requireRole(Role.ADMIN, Role.WAREHOUSE);
   const qty = -Math.abs(input.quantity);
+  if (qty === 0) throw new Error("INVALID_QUANTITY");
   await prisma.$transaction(async (tx) => {
-    await tx.product.update({
-      where: { id: input.productId },
+    const updated = await tx.product.updateMany({
+      where: { id: input.productId, stock: { gte: Math.abs(qty) } },
       data: { stock: { increment: qty } },
     });
+    if (updated.count === 0) throw new Error("INSUFFICIENT_STOCK");
     await tx.stockLog.create({
       data: {
         productId: input.productId,
@@ -420,7 +423,7 @@ export async function getSales(filters?: {
   paymentMethod?: string;
   ownOnly?: boolean;
 }) {
-  const session = await requireSession();
+  const session = await requireRole(Role.ADMIN, Role.CASHIER);
   const where: Record<string, unknown> = {};
 
   if (session.user.role === Role.CASHIER || filters?.ownOnly) {
@@ -468,11 +471,19 @@ export async function getSales(filters?: {
 }
 
 export async function getSaleById(id: string) {
-  await requireSession();
+  const session = await requireRole(Role.ADMIN, Role.CASHIER);
   const sale = await prisma.sale.findUnique({
     where: { id },
     include: { cashier: true, items: { include: { product: true } } },
   });
+  if (!sale) return { sale: null, settings: null };
+  if (session.user.role === Role.CASHIER) {
+    const start = new Date();
+    start.setHours(0, 0, 0, 0);
+    if (sale.cashierId !== session.user.id || sale.createdAt < start) {
+      throw new Error("FORBIDDEN");
+    }
+  }
   const settings = await prisma.storeSettings.findUnique({ where: { id: "default" } });
   return { sale, settings };
 }
@@ -634,13 +645,13 @@ export async function updateSettings(input: {
   receiptFooter?: string;
   locale?: string;
   receiptWidthMm?: number;
-  logoUrl?: string;
+  logoUrl?: string | null;
 }) {
   await requireRole(Role.ADMIN);
   await prisma.storeSettings.upsert({
     where: { id: "default" },
-    create: { id: "default", ...input },
-    update: input,
+    create: { id: "default", ...input, logoUrl: input.logoUrl ?? null },
+    update: { ...input, logoUrl: input.logoUrl ?? null },
   });
   revalidatePath("/settings");
   revalidatePath("/");
