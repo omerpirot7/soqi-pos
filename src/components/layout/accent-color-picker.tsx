@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
 import { useTranslations } from "next-intl";
-import { Palette, RotateCcw } from "lucide-react";
+import { Palette } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -50,12 +50,6 @@ export function AccentColorPicker() {
     setColor(next);
     writeStoredAccent(next);
     applyAccentColor(next, resolvedTheme === "dark");
-  }
-
-  function reset() {
-    setColor(DEFAULT_ACCENT);
-    writeStoredAccent(null);
-    clearAccentColor();
   }
 
   if (!mounted) {
@@ -113,15 +107,6 @@ export function AccentColorPicker() {
             className="h-9 w-12 cursor-pointer rounded-md border bg-transparent p-0.5"
           />
         </label>
-        <Button
-          variant="outline"
-          size="sm"
-          className="mt-3 w-full gap-2"
-          onClick={reset}
-        >
-          <RotateCcw className="h-3.5 w-3.5" />
-          {t("resetColor")}
-        </Button>
       </DropdownMenuContent>
     </DropdownMenu>
   );
